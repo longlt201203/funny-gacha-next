@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum ItemType {
+  WEAPON
+  CHARACTER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Item {
+  id        Int      @id @default(autoincrement())
+  name      String
+  rarity    String
+  featured  Boolean  @default(false)
+  itemType  ItemType
+  itemImage String
+  banners   Banner[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Banner {
+  id                    Int      @id @default(autoincrement())
+  name                  String   @unique
+  bannerThumbnail       String   @default("")
+  items                 Item[]
+  fiveStarRate          Float    @default(0.6)
+  fourStarRate          Float    @default(5.1)
+  fiveStarHardPity      Int      @default(90)
+  fiveStarSoftPityStart Int      @default(74)
+  fiveStarSoftIncrease  Float    @default(6)
+  fourStarHardPity      Int      @default(10)
+  featuredRate          Float    @default(50)
+  guaranteeEnabled      Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model PullHistory {
+  id          Int      @id @default(autoincrement())
+  bannerName  String
+  pullBatchId String
+  pullOrder   Int
+  rarity      Int
+  itemType    ItemType
+  itemName    String
+  itemImage   String
+  featured    Boolean
+  createdAt   DateTime @default(now())
+}
+
+model GachaState {
+  id           Int      @id @default(autoincrement())
+  bannerName   String   @unique
+  currentPity  Int      @default(0)
+  fourStarPity Int      @default(0)
+  totalPity    Int      @default(0)
+  guaranteedFeatured Boolean @default(false)
+  updatedAt    DateTime @updatedAt
+}
