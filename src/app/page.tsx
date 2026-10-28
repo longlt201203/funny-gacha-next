@@ -1101,13 +1101,24 @@ export default function Home() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,#1e293b_0%,#111827_45%,#09090b_100%)] px-4 py-6 text-slate-100 sm:px-8 sm:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         {isRolling && rollVideoSrc ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/95 p-4 backdrop-blur-sm">
             <div className="relative w-full max-w-5xl">
+              {rollHasS ? (
+                // Golden ambient light spilling around the video when the pull contains an S.
+                <>
+                  <div className="pointer-events-none absolute inset-[-14%] rounded-[3rem] bg-[radial-gradient(ellipse_at_center,rgba(253,224,71,0.55),rgba(245,158,11,0.3)_45%,transparent_72%)] blur-3xl motion-safe:animate-pulse" />
+                  <div className="pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[125%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[conic-gradient(from_0deg,transparent,rgba(253,224,71,0.6),transparent_28%,rgba(251,146,60,0.5),transparent_58%,rgba(254,240,138,0.6),transparent_85%)] opacity-60 blur-3xl motion-safe:animate-s-spin" />
+                </>
+              ) : null}
               <video
                 ref={rollVideoRef}
                 key={rollVideoSrc}
                 src={rollVideoSrc}
-                className="h-auto w-full rounded-2xl border border-white/40 shadow-[0_0_60px_rgba(255,255,255,0.15)]"
+                className={`relative h-auto w-full rounded-2xl border ${
+                  rollHasS
+                    ? "border-amber-200/70 shadow-[0_0_80px_rgba(253,224,71,0.45),0_0_160px_rgba(245,158,11,0.3)]"
+                    : "border-white/40 shadow-[0_0_60px_rgba(255,255,255,0.15)]"
+                }`}
                 autoPlay
                 playsInline
                 muted={soundVolume === 0 || rollHasS}
