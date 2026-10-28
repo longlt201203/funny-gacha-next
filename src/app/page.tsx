@@ -28,6 +28,12 @@ const REVEAL_SFX_BY_RARITY: Record<3 | 4 | 5, string> = {
   4: "/sfx/reveal-4star.ogg",
   5: "/sfx/reveal-5star.ogg",
 };
+const RESOURCE_PER_PULL = 160;
+
+function formatResource(pity: number): string {
+  return Math.round(pity * RESOURCE_PER_PULL).toLocaleString();
+}
+
 const SOUND_VOLUME_STORAGE_KEY = "gacha-sound-volume";
 const SOUND_VOLUME_COOKIE_KEY = "gacha_sound_volume";
 
@@ -352,7 +358,7 @@ export default function Home() {
     setPendingResults(null);
     setRollVideoSrc(null);
     setIsRolling(false);
-    if (created.length === 10) {
+    if (created.length > 0) {
       setRevealBatch(created);
       setRevealedCount(0);
       return;
@@ -889,12 +895,6 @@ export default function Home() {
             >
               Manage Banners
             </Link>
-            <Link
-              href="/banner-settings"
-              className="rounded-xl border border-cyan-300/40 bg-cyan-500/15 px-4 py-2 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/30"
-            >
-              Banner Settings
-            </Link>
           </div>
         </div>
 
@@ -983,6 +983,25 @@ export default function Home() {
                 </p>
               </div>
 
+              <h3 className="mb-2 text-lg font-semibold">Resource spent</h3>
+              <div className="mb-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-4">
+                <p className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-2 text-emerald-100">
+                  Total: {formatResource(pullStatistics.totalPulls)}
+                </p>
+                <p className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-2 text-emerald-100">
+                  Avg per S: {formatResource(pullStatistics.averagePity)}
+                </p>
+                <p className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-2 text-emerald-100">
+                  Max per S: {formatResource(pullStatistics.maxPity)}
+                </p>
+                <p className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-3 py-2 text-emerald-100">
+                  Latest S:{" "}
+                  {pullStatistics.lastSPity === null
+                    ? "-"
+                    : formatResource(pullStatistics.lastSPity)}
+                </p>
+              </div>
+
               <p className="mb-3 text-sm text-slate-300/90">
                 Latest S pity:{" "}
                 {pullStatistics.lastSPity === null
@@ -1041,7 +1060,8 @@ export default function Home() {
                       </p>
                       <p className="text-xs text-slate-200/85">
                         {new Date(entry.createdAt).toLocaleString()} •{" "}
-                        {entry.featured ? "featured" : "standard"}
+                        {entry.featured ? "featured" : "standard"} •{" "}
+                        {formatResource(entry.pity)} spent
                       </p>
                     </li>
                   ))}

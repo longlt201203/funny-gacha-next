@@ -24,6 +24,15 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   allowedDevOrigins,
+  async redirects() {
+    return [
+      {
+        source: "/banner-settings",
+        destination: "/banners",
+        permanent: false,
+      },
+    ];
+  },
   turbopack: {
     rules: {
       "*.css": {
