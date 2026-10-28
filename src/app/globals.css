@@ -12,6 +12,51 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Looping effects for the S-tier reveal; the one-shot burst is driven by animejs in page.tsx. */
+@theme {
+  --animate-s-spin: s-spin 16s linear infinite;
+  --animate-s-border: s-spin 3.5s linear infinite;
+  --animate-s-shine: s-shine 3s ease-in-out infinite;
+  --animate-s-float: s-float 3.6s ease-in infinite;
+  --animate-s-prism: s-prism 2.5s linear infinite;
+
+  @keyframes s-prism {
+    to {
+      background-position: 200% center;
+    }
+  }
+
+  @keyframes s-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes s-shine {
+    0% {
+      transform: translateX(-160%) skewX(-20deg);
+    }
+    55%,
+    100% {
+      transform: translateX(420%) skewX(-20deg);
+    }
+  }
+
+  @keyframes s-float {
+    0% {
+      transform: translateY(0) scale(0.5);
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-70vh) scale(1.2);
+      opacity: 0;
+    }
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

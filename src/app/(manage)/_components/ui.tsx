@@ -24,9 +24,9 @@ export const RARITY_META: Record<
   },
   B: {
     stars: 3,
-    badge: "border-slate-300/60 bg-slate-300/15 text-slate-100",
-    ring: "ring-slate-300/60",
-    text: "text-slate-300",
+    badge: "border-blue-300/70 bg-blue-400/20 text-blue-100",
+    ring: "ring-blue-300/70",
+    text: "text-blue-200",
   },
 };
 

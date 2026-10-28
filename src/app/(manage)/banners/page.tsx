@@ -846,7 +846,7 @@ export default function BannersPage() {
             <div className="flex h-2 overflow-hidden rounded-full bg-slate-800" aria-hidden>
               <div className="bg-amber-400" style={{ width: `${Math.min(100, fiveRate)}%` }} />
               <div className="bg-violet-400" style={{ width: `${Math.min(100, fourRate)}%` }} />
-              <div className="bg-slate-400" style={{ width: `${threeRate}%` }} />
+              <div className="bg-blue-400" style={{ width: `${threeRate}%` }} />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
