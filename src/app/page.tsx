@@ -62,6 +62,8 @@ const GOLD_SHIMMER_TEXT =
   "bg-[linear-gradient(90deg,#b45309,#fde68a,#fffbeb,#fbbf24,#b45309)] bg-size-[200%_auto] bg-clip-text text-transparent motion-safe:animate-s-prism";
 const FEATURED_LETTERS = "FEATURED".split("");
 
+const REVEAL_TILT_MAX_DEG = 12;
+
 const RESOURCE_PER_PULL = 160;
 // Every pull goes through the one-by-one reveal and a single POST /api/pulls, so keep batches bounded.
 const MAX_PULL_COUNT = 5000;
@@ -214,6 +216,7 @@ export default function Home() {
   const revealModalRef = useRef<HTMLDivElement | null>(null);
   const revealCardRef = useRef<HTMLDivElement | null>(null);
   const revealOverlayRef = useRef<HTMLDivElement | null>(null);
+  const revealTiltRef = useRef<HTMLDivElement | null>(null);
   const delayedSfxRef = useRef<number | null>(null);
   const [currentPity, setCurrentPity] = useState(
     engineRef.current.getCurrentPity(),
@@ -534,6 +537,34 @@ export default function Home() {
     });
   };
 
+  // S cards lean toward the cursor; written straight to the DOM so pointer moves don't re-render the page.
+  const handleRevealPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const tilt = revealTiltRef.current;
+    const bounds = revealModalRef.current?.getBoundingClientRect();
+    if (
+      !tilt ||
+      !bounds ||
+      lastRevealedItem?.rarity !== 5 ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+    const x = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
+    const y = Math.min(1, Math.max(0, (event.clientY - bounds.top) / bounds.height));
+    tilt.style.transform = `perspective(1200px) rotateX(${(0.5 - y) * 2 * REVEAL_TILT_MAX_DEG}deg) rotateY(${(x - 0.5) * 2 * REVEAL_TILT_MAX_DEG}deg)`;
+    tilt.style.setProperty("--tilt-x", `${x * 100}%`);
+    tilt.style.setProperty("--tilt-y", `${y * 100}%`);
+    tilt.style.setProperty("--tilt-glare", "1");
+  };
+
+  const resetRevealTilt = () => {
+    const tilt = revealTiltRef.current;
+    if (tilt) {
+      tilt.style.transform = "";
+      tilt.style.setProperty("--tilt-glare", "0");
+    }
+  };
+
   const handleSkipReveal = () => {
     if (!revealBatch) {
       return;
@@ -668,6 +699,10 @@ export default function Home() {
       // The featured reveal leaves a glow filter and clip-path on the shared card element; clear them per item.
       revealCardRef.current.style.filter = "";
       revealCardRef.current.style.clipPath = "";
+      if (revealTiltRef.current) {
+        revealTiltRef.current.style.transform = "";
+        revealTiltRef.current.style.setProperty("--tilt-glare", "0");
+      }
 
       if (lastRevealedItem.rarity === 5) {
         const card = revealCardRef.current;
@@ -1100,6 +1135,8 @@ export default function Home() {
                   : "bg-[radial-gradient(circle_at_top,#1f2937_0%,#09090b_70%)]"
             }`}
             onClick={() => void handleRevealNext()}
+            onPointerMove={handleRevealPointerMove}
+            onPointerLeave={resetRevealTilt}
           >
             {isFeaturedReveal ? (
               <>
@@ -1242,6 +1279,11 @@ export default function Home() {
                     )}
                   </>
                 ) : null}
+                {/* Separate wrapper for the cursor tilt, so it never fights the animejs transforms on the card. */}
+                <div
+                  ref={revealTiltRef}
+                  className="relative transition-transform duration-200 ease-out will-change-transform"
+                >
                 <div
                   ref={revealCardRef}
                   className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br p-4 ${revealCardStyle}`}
@@ -1343,6 +1385,17 @@ export default function Home() {
                       </span>
                     </div>
                   )}
+                  {lastRevealedItem.rarity === 5 ? (
+                    <div
+                      className="pointer-events-none absolute inset-0 z-20 rounded-2xl mix-blend-overlay transition-opacity duration-300"
+                      style={{
+                        background:
+                          "radial-gradient(circle at var(--tilt-x, 50%) var(--tilt-y, 50%), rgba(255,255,255,0.55), transparent 45%)",
+                        opacity: "var(--tilt-glare, 0)",
+                      }}
+                    />
+                  ) : null}
+                </div>
                 </div>
               </div>
             ) : null}
