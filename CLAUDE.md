@@ -36,7 +36,9 @@ A gacha (loot-pull) simulator. Most of the app is client components that call JS
 - `normalizeBannerSettings` clamps every setting and scales the 5★ and 4★ rates down when together they exceed 100. `GachaEngine` is the public wrapper the UI uses.
 - Naming quirk: the DB column is `Banner.featuredRate`, but the engine and UI call it `winRate`. The banner API routes accept either name on input and return `winRate` alongside `featuredRate`.
 
-**State persistence flow (`src/app/page.tsx`, a large `"use client"` page):**
+**Gacha page:** `src/app/page.tsx` is a `"use client"` page that owns the engine plus pull, pity, and reveal state, and renders sections from `src/app/_components/`. Those include the roll-video and reveal overlays, hooks for audio, sound volume, and pull records, and `reveal-animation.ts`, which holds every animejs timeline. Reveal effect layers are tagged `data-s-fx="<name>"` and found by that name from `reveal-animation.ts`, so keep the attribute names in sync when you edit either side.
+
+**State persistence flow:**
 1. Load `/api/banners` and build a `GachaEngine` for the selected banner. If loading fails, use the fallback catalog in `gacha.ts`.
 2. Restore pity from `GET /api/pity?bannerName=` (the `GachaState` row, keyed by banner **name**) into the engine with `hydratePityState`.
 3. After each pull, the client `PUT`s updated pity to `/api/pity` and `POST`s the results to `/api/pulls`. These are denormalized `PullHistory` rows (item name/image copied, `pullBatchId` groups a 1x/10x pull).
