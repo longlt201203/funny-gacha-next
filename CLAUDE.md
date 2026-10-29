@@ -12,9 +12,9 @@ Bun is the package manager and runtime (`bun@1.3.13`).
 
 ```bash
 bun install
-bun run db:up                      # start MySQL via docker compose (port 3306)
+bun run db:up                      # start MySQL via docker compose (port 3306); db:down / db:logs
 bun run prisma:migrate --name <x>  # prisma migrate dev: create + apply migration, regenerate client
-bun run prisma:generate
+bun run prisma:generate            # prisma:studio for a DB browser
 bun run dev                        # next dev --turbopack on 0.0.0.0
 bun run dev:webpack                # same, but with webpack
 bun run share                      # build + start (no HMR websocket; for remote-device access)
@@ -45,6 +45,8 @@ A gacha (loot-pull) simulator. Most of the app is client components that call JS
 `GachaState` and `PullHistory` link to banners by `bannerName` string, not by foreign key, so renaming a banner orphans its pity and history.
 
 **Management pages** live in the `src/app/(manage)/` route group, so the URLs are still `/items` and `/banners`. They share `layout.tsx` (dark shell and tab nav) and a small UI kit in `_components/ui.tsx` (Drawer, ConfirmDialog, ImageDropzone, toasts, rarity badges, `uploadImage`). Build new management UI from that kit rather than one-off styles. `/banners` uses a single drawer form to edit a banner's name, thumbnail, item pool (Banner↔Item is an implicit many-to-many), and rate/pity/guarantee settings, and it warns about pools the engine can't use well (e.g. no S items, or no featured/standard split). `/banner-settings` redirects to `/banners` via `next.config.ts`. `POST /api/uploads` writes images to `public/uploads/` on local disk and returns `url` (relative) and `publicUrl` (absolute).
+
+**Styling:** Tailwind CSS v4. Under Turbopack, CSS goes through the `@tailwindcss/turbopack` loader rule in `next.config.ts`.
 
 **Assets:** reveal videos (`public/videos/{3,4,5}star-{single,multi}.mp4`) and SFX (`public/sfx/`) are chosen by the highest rarity in a pull. Animations use `animejs` v4, loaded with a dynamic `import()`.
 

@@ -12,6 +12,12 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* animejs writes transform/opacity inline every frame; a layer per effect keeps those writes to
+   compositing instead of repainting the whole reveal overlay. */
+[data-s-fx] {
+  will-change: transform, opacity;
+}
+
 /* Looping effects for the S-tier reveal; the one-shot burst is driven by animejs in page.tsx. */
 @theme {
   --animate-s-spin: s-spin 16s linear infinite;

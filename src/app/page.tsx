@@ -696,9 +696,6 @@ export default function Home() {
         return;
       }
 
-      // The featured reveal leaves a glow filter and clip-path on the shared card element; clear them per item.
-      revealCardRef.current.style.filter = "";
-      revealCardRef.current.style.clipPath = "";
       if (revealTiltRef.current) {
         revealTiltRef.current.style.transform = "";
         revealTiltRef.current.style.setProperty("--tilt-glare", "0");
@@ -844,22 +841,21 @@ export default function Home() {
             ease: "inBack",
           });
 
-          // The card opens like a door of light from the stars' line, settling into a lasting golden glow.
+          // The card opens like a door of light from the stars' line; the lasting glow is a static box-shadow.
+          // Transform + an overlay fade only: animating filter/clip-path on the card repaints it every frame.
           animate(card, {
             opacity: [{ to: 1, duration: 120 }],
-            clipPath: [
-              "inset(48% 0% 48% 0% round 16px)",
-              "inset(0% 0% 0% 0% round 16px)",
-            ],
-            scale: [1.2, 1],
-            filter: [
-              "brightness(4) saturate(0.3) drop-shadow(0px 0px 90px rgba(253,224,71,1))",
-              "brightness(1.4) saturate(1.1) drop-shadow(0px 0px 60px rgba(253,224,71,0.85))",
-              "brightness(1) saturate(1) drop-shadow(0px 0px 28px rgba(251,191,36,0.55))",
-            ],
+            scaleX: [1.2, 1],
+            scaleY: [0.04, 1],
             duration: 1300,
             delay: t,
             ease: "outExpo",
+          });
+          run(fx("card-flash"), {
+            opacity: [1, 0],
+            duration: 1100,
+            delay: t,
+            ease: "inQuad",
           });
         } else {
           // Impact: gold flash plus a short camera shake.
@@ -879,16 +875,11 @@ export default function Home() {
             });
           }
 
-          // Card bursts out of an overexposed blur.
+          // Card bursts out of a white flash (the card-flash overlay stands in for an animated filter).
           animate(card, {
             opacity: [0, 1],
             scale: [0.5, 1.08, 1],
             rotateZ: [-5, 1.5, 0],
-            filter: [
-              "brightness(3) blur(14px)",
-              "brightness(1.5) blur(0px)",
-              "brightness(1) blur(0px)",
-            ],
             duration: 1100,
             ease: "outExpo",
           });
@@ -972,7 +963,8 @@ export default function Home() {
         run(fx("name"), {
           opacity: [0, 1],
           translateY: [28, 0],
-          letterSpacing: ["0.7em", "0.12em"],
+          // scaleX instead of letter-spacing, which would re-run layout every frame.
+          scaleX: [1.6, 1],
           duration: 1000,
           delay: titleStart + 900,
           ease: "outExpo",
@@ -1072,8 +1064,9 @@ export default function Home() {
       : latest?.rarity === 4
         ? "from-violet-400 via-fuchsia-300 to-indigo-300"
         : "from-blue-400 via-sky-300 to-cyan-200";
-  const revealCardStyle =
-    lastRevealedItem?.rarity === 5
+  const revealCardStyle = isFeaturedReveal
+    ? "from-amber-400/30 via-orange-400/20 to-rose-400/30 border-amber-300/70 shadow-[0_0_28px_rgba(251,191,36,0.55),0_0_70px_rgba(251,191,36,0.35)]"
+    : lastRevealedItem?.rarity === 5
       ? "from-amber-400/30 via-orange-400/20 to-rose-400/30 border-amber-300/70 shadow-[0_0_70px_rgba(251,191,36,0.35)]"
       : lastRevealedItem?.rarity === 4
         ? "from-violet-400/30 via-fuchsia-400/20 to-indigo-400/30 border-violet-300/70 shadow-[0_0_70px_rgba(167,139,250,0.35)]"
@@ -1101,13 +1094,14 @@ export default function Home() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,#1e293b_0%,#111827_45%,#09090b_100%)] px-4 py-6 text-slate-100 sm:px-8 sm:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         {isRolling && rollVideoSrc ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/95 p-4 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black p-4">
             <div className="relative w-full max-w-5xl">
               {rollHasS ? (
                 // Golden ambient light spilling around the video when the pull contains an S.
+                // Softened with gradients/masks, not `blur()`: a blur on a spinning layer is re-run every frame.
                 <>
-                  <div className="pointer-events-none absolute inset-[-14%] rounded-[3rem] bg-[radial-gradient(ellipse_at_center,rgba(253,224,71,0.55),rgba(245,158,11,0.3)_45%,transparent_72%)] blur-3xl motion-safe:animate-pulse" />
-                  <div className="pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[125%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[conic-gradient(from_0deg,transparent,rgba(253,224,71,0.6),transparent_28%,rgba(251,146,60,0.5),transparent_58%,rgba(254,240,138,0.6),transparent_85%)] opacity-60 blur-3xl motion-safe:animate-s-spin" />
+                  <div className="pointer-events-none absolute inset-[-14%] rounded-[3rem] bg-[radial-gradient(ellipse_at_center,rgba(253,224,71,0.55),rgba(245,158,11,0.3)_45%,transparent_72%)] motion-safe:animate-pulse" />
+                  <div className="pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[125%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[conic-gradient(from_0deg,transparent,rgba(253,224,71,0.6),transparent_28%,rgba(251,146,60,0.5),transparent_58%,rgba(254,240,138,0.6),transparent_85%)] opacity-60 mask-[radial-gradient(closest-side,black_35%,transparent)] motion-safe:animate-s-spin" />
                 </>
               ) : null}
               <video
@@ -1138,7 +1132,7 @@ export default function Home() {
         {isRevealingBatch ? (
           <div
             ref={revealOverlayRef}
-            className={`fixed inset-0 z-40 flex cursor-pointer items-center justify-center overflow-hidden p-4 backdrop-blur-sm ${
+            className={`fixed inset-0 z-40 flex cursor-pointer items-center justify-center overflow-hidden p-4 ${
               isFeaturedReveal
                 ? "bg-[radial-gradient(circle_at_center,#451a03_0%,#1c1917_45%,#030712_85%)]"
                 : lastRevealedItem?.rarity === 5
@@ -1243,7 +1237,7 @@ export default function Home() {
             {lastRevealedItem ? (
               <div
                 ref={revealModalRef}
-                className="pointer-events-none relative w-full max-w-5xl"
+                className="pointer-events-none relative w-full max-w-5xl will-change-transform"
               >
                 {lastRevealedItem.rarity === 5 ? (
                   <>
@@ -1251,14 +1245,14 @@ export default function Home() {
                       /* Outer wrapper is animated by animejs; the inner layer spins via CSS so the transforms don't fight. */
                       <div
                         data-s-fx="rays"
-                        className="pointer-events-none absolute left-1/2 top-1/2 h-[170vmax] w-[170vmax] -translate-x-1/2 -translate-y-1/2 opacity-0"
+                        className="pointer-events-none absolute left-1/2 top-1/2 h-[124vmax] w-[124vmax] -translate-x-1/2 -translate-y-1/2 opacity-0"
                       >
-                        <div className="h-full w-full rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(253,224,71,0.32)_0deg_5deg,transparent_5deg_15deg)] mask-[radial-gradient(circle,black_8%,transparent_50%)] motion-safe:animate-s-spin" />
+                        <div className="h-full w-full rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(253,224,71,0.32)_0deg_5deg,transparent_5deg_15deg)] mask-[radial-gradient(closest-side,black_15%,transparent_97%)] motion-safe:animate-s-spin" />
                       </div>
                     )}
                     <div
                       data-s-fx="backdrop-pulse"
-                      className={`pointer-events-none absolute inset-[-15%] rounded-full opacity-0 blur-2xl ${
+                      className={`pointer-events-none absolute inset-[-15%] rounded-full opacity-0 ${
                         isFeaturedReveal
                           ? "bg-[radial-gradient(circle,rgba(255,251,235,0.75)_0%,rgba(253,224,71,0.55)_25%,rgba(245,158,11,0.35)_48%,rgba(15,23,42,0)_72%)]"
                           : "bg-[radial-gradient(circle,rgba(251,191,36,0.6)_0%,rgba(244,114,182,0.3)_35%,rgba(15,23,42,0)_70%)]"
@@ -1297,7 +1291,7 @@ export default function Home() {
                 >
                 <div
                   ref={revealCardRef}
-                  className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br p-4 ${revealCardStyle}`}
+                  className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br p-4 will-change-[transform,opacity] ${revealCardStyle}`}
                 >
                   {lastRevealedItem.rarity === 5 ? (
                     <>
@@ -1308,12 +1302,14 @@ export default function Home() {
                             : "bg-[conic-gradient(from_0deg,#fde047,#f97316,#f472b6,#a78bfa,#38bdf8,#fde047)]"
                         }`}
                       />
-                      {isFeaturedReveal ? null : (
-                        <div
-                          data-s-fx="card-flash"
-                          className="pointer-events-none absolute inset-0 z-30 rounded-2xl bg-white opacity-0"
-                        />
-                      )}
+                      <div
+                        data-s-fx="card-flash"
+                        className={`pointer-events-none absolute inset-0 z-30 rounded-2xl opacity-0 ${
+                          isFeaturedReveal
+                            ? "bg-[radial-gradient(circle,#fffbeb_0%,#fde68a_60%,#f59e0b_100%)]"
+                            : "bg-white"
+                        }`}
+                      />
                     </>
                   ) : null}
                   <div
